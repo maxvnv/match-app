@@ -28,6 +28,9 @@ This plan outlines the steps to develop the MVP backend for the Tennis Match App
     *   [x] 0.7.2. For now, configure it to allow all requests to simplify early development, or secure actuator endpoints.
         *   Example: Permit access to `/actuator/**` and H2 console.
     *   [ ] 0.7.3. (Learning) Understand Spring Security filter chain basics.
+*   [x] 0.8. Developer Experience - API Documentation & Interaction (NEW)
+    *   [x] 0.8.1. Integrate Swagger UI using `springdoc-openapi-starter-webmvc-ui`.
+    *   [x] 0.8.2. Verify Swagger UI is accessible (e.g., at `/swagger-ui.html`).
 
 ## Phase 1: User Management (Core)
 
