@@ -1,20 +1,25 @@
 package com.tennismatch.matchapp.service.impl;
 
-import com.tennismatch.matchapp.dto.UserRegistrationDto;
+import com.tennismatch.matchapp.dto.RegisterRequest;
+import com.tennismatch.matchapp.model.NtrpLevel;
+import com.tennismatch.matchapp.model.Sex;
 import com.tennismatch.matchapp.model.User;
 import com.tennismatch.matchapp.repository.UserRepository;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
+import org.mockito.ArgumentCaptor;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 import org.springframework.security.crypto.password.PasswordEncoder;
 
 import java.util.Optional;
+import java.util.Set;
 
 import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.ArgumentMatchers.anyString;
 import static org.mockito.Mockito.*;
 
 @ExtendWith(MockitoExtension.class)
@@ -29,109 +34,91 @@ class UserServiceImplTest {
     @InjectMocks
     private UserServiceImpl userService;
 
-    private UserRegistrationDto registrationDto;
-    private User user;
+    private RegisterRequest registerRequest;
+    private User expectedUser;
 
     @BeforeEach
     void setUp() {
-        registrationDto = new UserRegistrationDto(
-                "testuser",
-                "password",
-                "test@example.com",
-                "Test",
-                "User",
-                "City",
-                "Intermediate"
-        );
+        registerRequest = RegisterRequest.builder()
+                .email("test@example.com")
+                .password("password123")
+                .firstName("Test")
+                .lastName("User")
+                .ntrpLevel(NtrpLevel.INTERMEDIATE_3_0)
+                .homeTown("Testville")
+                .age(30)
+                .sex(Sex.MALE)
+                .build();
 
-        user = new User();
-        user.setId(1L);
-        user.setUsername("testuser");
-        user.setEmail("test@example.com");
-        user.setPassword("encodedpassword"); // Mock encoded password
-        user.setFirstName("Test");
-        user.setLastName("User");
-        user.setCity("City");
-        user.setTennisLevel("Intermediate");
+        expectedUser = User.builder() // Used for comparison in some tests
+                .id(1L) // ID will be set by DB, but useful for some mock returns
+                .email(registerRequest.getEmail())
+                .password("encodedpassword") // Assume this is the encoded form
+                .firstName(registerRequest.getFirstName())
+                .lastName(registerRequest.getLastName())
+                .ntrpLevel(registerRequest.getNtrpLevel())
+                .homeTown(registerRequest.getHomeTown())
+                .age(registerRequest.getAge())
+                .sex(registerRequest.getSex())
+                .roles(Set.of("USER"))
+                .build();
     }
 
     @Test
     void registerUser_Success() {
-        when(userRepository.findByUsername(registrationDto.getUsername())).thenReturn(Optional.empty());
-        when(userRepository.findByEmail(registrationDto.getEmail())).thenReturn(Optional.empty());
-        when(passwordEncoder.encode(registrationDto.getPassword())).thenReturn("encodedpassword");
-        when(userRepository.save(any(User.class))).thenReturn(user);
+        when(userRepository.existsByEmail(registerRequest.getEmail())).thenReturn(false);
+        when(passwordEncoder.encode(registerRequest.getPassword())).thenReturn("encodedpassword");
+        // Use ArgumentCaptor to capture the User object passed to save
+        ArgumentCaptor<User> userCaptor = ArgumentCaptor.forClass(User.class);
+        // When save is called, return the captured user with an ID set (simulating DB save)
+        when(userRepository.save(userCaptor.capture())).thenAnswer(invocation -> {
+            User userToSave = invocation.getArgument(0);
+            userToSave.setId(1L); // Simulate ID generation
+            return userToSave;
+        });
 
-        User result = userService.registerUser(registrationDto);
+        User result = userService.registerUser(registerRequest);
 
         assertNotNull(result);
-        assertEquals(user.getUsername(), result.getUsername());
-        assertEquals(user.getEmail(), result.getEmail());
-        assertEquals(user.getPassword(), result.getPassword());
-        verify(userRepository, times(1)).findByUsername(registrationDto.getUsername());
-        verify(userRepository, times(1)).findByEmail(registrationDto.getEmail());
-        verify(passwordEncoder, times(1)).encode(registrationDto.getPassword());
-        verify(userRepository, times(1)).save(any(User.class));
-    }
+        assertEquals(registerRequest.getEmail(), result.getEmail());
+        assertEquals("encodedpassword", result.getPassword());
+        assertEquals(registerRequest.getFirstName(), result.getFirstName());
+        assertEquals(registerRequest.getNtrpLevel(), result.getNtrpLevel());
+        assertTrue(result.getRoles().contains("USER"));
+        assertEquals(1, result.getRoles().size());
+        assertNotNull(result.getId()); // Ensure ID is set
 
-    @Test
-    void registerUser_DuplicateUsername_ThrowsException() {
-        when(userRepository.findByUsername(registrationDto.getUsername())).thenReturn(Optional.of(user));
-
-        IllegalArgumentException exception = assertThrows(IllegalArgumentException.class,
-                () -> userService.registerUser(registrationDto));
-
-        assertEquals("Username already in use", exception.getMessage());
-        verify(userRepository, times(1)).findByUsername(registrationDto.getUsername());
-        verify(userRepository, times(0)).findByEmail(anyString());
-        verify(passwordEncoder, times(0)).encode(anyString());
-        verify(userRepository, times(0)).save(any(User.class));
+        verify(userRepository, times(1)).existsByEmail(registerRequest.getEmail());
+        verify(passwordEncoder, times(1)).encode(registerRequest.getPassword());
+        verify(userRepository, times(1)).save(userCaptor.getValue());
+        
+        User savedUser = userCaptor.getValue();
+        assertEquals(registerRequest.getEmail(), savedUser.getEmail());
+        assertEquals(registerRequest.getAge(), savedUser.getAge());
+        assertEquals(registerRequest.getSex(), savedUser.getSex());
     }
 
     @Test
     void registerUser_DuplicateEmail_ThrowsException() {
-        when(userRepository.findByUsername(registrationDto.getUsername())).thenReturn(Optional.empty());
-        when(userRepository.findByEmail(registrationDto.getEmail())).thenReturn(Optional.of(user));
+        when(userRepository.existsByEmail(registerRequest.getEmail())).thenReturn(true);
 
         IllegalArgumentException exception = assertThrows(IllegalArgumentException.class,
-                () -> userService.registerUser(registrationDto));
+                () -> userService.registerUser(registerRequest));
 
-        assertEquals("Email already in use", exception.getMessage());
-        verify(userRepository, times(1)).findByUsername(registrationDto.getUsername());
-        verify(userRepository, times(1)).findByEmail(registrationDto.getEmail());
+        assertEquals("Error: Email is already in use!", exception.getMessage());
+        verify(userRepository, times(1)).existsByEmail(registerRequest.getEmail());
         verify(passwordEncoder, times(0)).encode(anyString());
         verify(userRepository, times(0)).save(any(User.class));
     }
 
     @Test
-    void findByUsername_UserFound_ReturnsOptionalUser() {
-        when(userRepository.findByUsername("testuser")).thenReturn(Optional.of(user));
-
-        Optional<User> result = userService.findByUsername("testuser");
-
-        assertTrue(result.isPresent());
-        assertEquals(user.getUsername(), result.get().getUsername());
-        verify(userRepository, times(1)).findByUsername("testuser");
-    }
-
-    @Test
-    void findByUsername_UserNotFound_ReturnsEmptyOptional() {
-        when(userRepository.findByUsername("nonexistent")).thenReturn(Optional.empty());
-
-        Optional<User> result = userService.findByUsername("nonexistent");
-
-        assertFalse(result.isPresent());
-        verify(userRepository, times(1)).findByUsername("nonexistent");
-    }
-
-    @Test
     void findByEmail_UserFound_ReturnsOptionalUser() {
-        when(userRepository.findByEmail("test@example.com")).thenReturn(Optional.of(user));
+        when(userRepository.findByEmail("test@example.com")).thenReturn(Optional.of(expectedUser));
 
         Optional<User> result = userService.findByEmail("test@example.com");
 
         assertTrue(result.isPresent());
-        assertEquals(user.getEmail(), result.get().getEmail());
+        assertEquals(expectedUser.getEmail(), result.get().getEmail());
         verify(userRepository, times(1)).findByEmail("test@example.com");
     }
 

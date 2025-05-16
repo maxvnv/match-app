@@ -1,69 +1,83 @@
-# Project Overview: Tennis Matchmaker (match-app)
+# Tennis Match App
 
-## 1. Introduction
+## Project Overview
 
-This is a Spring Boot application designed to help recreational tennis players find partners to play with in their city. The primary goal of this project is to build a functional backend service that can later serve a React frontend and a mobile iOS application. A key aspect of this project is to serve as a learning platform for implementing and practicing various technologies and concepts, particularly focusing on security, cloud deployment (AWS with Terraform), and observability (Prometheus, Grafana, OpenSearch).
+The Tennis Match App aims to connect recreational tennis players within a city (initially Kraków) to find and schedule matches. Many players currently rely on inconvenient methods like Facebook groups. This application will provide a dedicated platform for proposing, finding, and recording tennis matches.
 
-**Project Details (Initial):**
-* Build Tool: Gradle
-* Java Version: 21
-* Spring Boot Version: Latest Stable (e.g., 3.3.x)
-* Group ID: `com.tennis-match` (Note: current code uses `com.tennismatch`)
-* Artifact ID: `match-app`
-* Packaging: Jar
-* Initial Database: H2 (In-Memory), with a plan to migrate to PostgreSQL for production.
+This document provides a high-level overview. For detailed business requirements, please see `REQ.md`. For a comprehensive development plan, refer to `PLAN.md`.
 
-## 2. Core Functionalities
+## Core MVP Features (Backend First)
 
-The application will allow users to:
+The initial development focuses on delivering a Minimum Viable Product (MVP) for the backend system.
 
-1.  **User Registration & Profile Management:**
-    * Register with details like email, password, name, city, and self-assessed tennis level.
-    * Manage their profile information.
-2.  **Create Play Proposal:**
-    * Authenticated users can create "Play Proposals" specifying date/time availability, preferred location(s), and optional notes.
-3.  **Browse Play Proposals:**
-    * Authenticated users can browse active Play Proposals, with filtering options (e.g., by date, tennis level, location).
-4.  **Express Interest / Request Match:**
-    * Users can send a match request to the creator of a Play Proposal.
-5.  **Manage Match Requests & Confirm Match:**
-    * Proposal creators can view, accept, or decline incoming match requests.
-    * Upon acceptance, a match is confirmed.
+1.  **User Management:**
+    *   Register via email/password and Gmail (OAuth).
+    *   Login with credentials or Gmail.
+    *   Manage user profiles: name, tennis NTRP level, home town, age, sex.
 
-## 3. Development Phases (High Level)
+2.  **Match Operations:**
+    *   Propose a match with details: date, time, optionally court and preferred opponent level.
+    *   Search for available match proposals with filters (date, time, NTRP, location).
+    *   Accept a match proposal.
 
-The project development is planned in iterative phases. For a detailed breakdown, checklist, and technical reasoning, please refer to `TECHNICAL_DOCUMENTATION.md`.
+3.  **Post-Match:**
+    *   Enter match scores.
+    *   View personal match history (opponent, date, score).
 
-* **Phase 1: Project Setup & Basic Structure (Largely Completed)**
-    * Initialization, core model definition, repository setup, basic user service.
-* **Phase 2: Core Feature Implementation**
-    * User login, Play Proposal CRUD, Browse/filtering, match request workflow.
-* **Phase 3: Security Implementation - Iteration 1**
-    * Robust authentication (JWT), basic authorization.
-* **Phase 4: Initial AWS Deployment with Terraform & PostgreSQL Migration**
-    * Infrastructure setup on AWS (VPC, RDS, EC2/ECS), application deployment.
-* **Phase 5: Observability Setup**
-    * Logging with OpenSearch/Kibana, metrics with Prometheus/Grafana.
-* **Phase 6: Advanced Security & Refinements**
-    * OWASP Top 10 review, additional security measures, API documentation, comprehensive testing.
-* **Phase 7: Further Enhancements & Long-term Maintenance**
+## Technical Stack (Backend MVP)
 
-## 4. Security Learning Objectives & Focus Areas
+*   **Language/Framework:** Java 21, Spring Boot 3.4.5
+*   **Build Tool:** Gradle
+*   **Database:** H2 (development), PostgreSQL (production)
+*   **API:** RESTful APIs with Spring WebMVC
+*   **Security:** Spring Security (JWT for token-based authentication, OAuth2 for Gmail login)
+*   **Data Access:** Spring Data JPA (Hibernate)
+*   **Validation:** Spring Boot Starter Validation
+*   **Utilities:** Lombok
 
-Throughout the development, there will be a strong focus on:
+## Observability
 
-* **Authentication Mechanisms:** Username/Password, JWT.
-* **Authorization Rules:** Resource ownership, potentially Role-Based Access Control (RBAC).
-* **Secure Password Storage & Management:** BCrypt.
-* **Input Validation & Output Encoding:** Preventing injection, XSS.
-* **Cross-Site Request Forgery (CSRF) Protection.**
-* **Secure Session Management (if applicable, aiming for stateless JWT).**
-* **Transport Layer Security (HTTPS).**
-* **Secure API Design Principles.**
-* **Data Privacy & Protection.**
-* **Common Web Vulnerabilities (OWASP Top 10).**
-* **Infrastructure Security on AWS.**
-* **Dependency Vulnerability Management.**
+*   **Metrics:** Micrometer with Prometheus registry.
+*   **Visualization:** Grafana (connected to Prometheus).
+*   **Logging:** SLF4j/Logback, aiming for structured JSON logs for OpenSearch.
+*   **Log Aggregation:** OpenSearch (planned).
+*   **Distributed Tracing:** (Considered for future learning, e.g., Micrometer Tracing with Jaeger/Zipkin).
 
----
-*This document provides a general overview. For detailed technical plans, checklists, and evolving decisions, please consult `TECHNICAL_DOCUMENTATION.md` and `AI_AGENT_GUIDE.md`.*
+## Deployment (Planned)
+
+*   **Infrastructure as Code:** Terraform
+*   **Cloud Provider:** AWS
+    *   Compute: ECS (Fargate) or Elastic Beanstalk
+    *   Database: AWS RDS for PostgreSQL
+    *   Networking: VPC, ALB
+    *   Secrets: AWS Secrets Manager
+    *   Logging: AWS CloudWatch Logs, AWS OpenSearch Service
+    *   Monitoring: Amazon Managed Service for Prometheus, Amazon Managed Grafana (or self-hosted alternatives)
+*   **CI/CD:** GitLab CI
+    *   Automated build, test, and deployment pipelines.
+    *   Containerization with Docker.
+
+## Development Approach Highlights
+
+*   **Iterative Development:** Features will be built in phases, focusing on core functionality first.
+*   **Backend Focus:** The initial MVP is backend-only.
+*   **Learning Oriented:** The development plan includes specific learning objectives, especially around security, observability, and AWS deployment with Terraform.
+*   **Testing:** Emphasis on unit and integration testing throughout the development lifecycle.
+*   **Early CI/CD & Observability:** Basic CI/CD and observability tools will be set up early in the project.
+*   **Security by Design:** Security considerations are integrated into each development phase.
+
+## Future Considerations (Post-MVP)
+
+*   Frontend applications (iOS and React).
+*   Advanced search filters.
+*   Court booking integration.
+*   User rating system.
+*   In-app notifications and chat.
+
+## How to Use This Repository
+
+1.  **Business Requirements:** See `REQ.md` for a detailed breakdown of what the application aims to achieve from a user perspective.
+2.  **Development Plan:** `PLAN.md` contains a phased checklist of technical tasks to build the backend MVP. This plan will be updated as development progresses.
+3.  **Source Code:** The backend application code is primarily located in `src/main/java/com/tennismatch/matchapp/`.
+
+This project is an opportunity to learn and build a useful application. The plan emphasizes a structured approach to development, incorporating best practices for testing, security, and deployment.

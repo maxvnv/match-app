@@ -8,10 +8,12 @@ import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
+import org.springframework.security.core.authority.SimpleGrantedAuthority;
 import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.security.core.userdetails.UsernameNotFoundException;
 
 import java.util.Optional;
+import java.util.Set;
 
 import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.Mockito.*;
@@ -25,38 +27,41 @@ class DefaultUserDetailsServiceTest {
     @InjectMocks
     private DefaultUserDetailsService userDetailsService;
 
-    private User user;
+    private User appUser; // Renamed to avoid confusion with Spring Security's User
 
     @BeforeEach
     void setUp() {
-        user = new User();
-        user.setId(1L);
-        user.setUsername("testuser");
-        user.setPassword("encodedpassword");
-        // Other user properties can be set if needed for specific tests
+        appUser = new User();
+        appUser.setId(1L);
+        appUser.setEmail("test@example.com"); // Use email
+        appUser.setPassword("encodedpassword");
+        appUser.setRoles(Set.of("USER")); // Set roles
     }
 
     @Test
     void loadUserByUsername_UserFound_ReturnsUserDetails() {
-        when(userService.findByUsername("testuser")).thenReturn(Optional.of(user));
+        String testEmail = "test@example.com";
+        when(userService.findByEmail(testEmail)).thenReturn(Optional.of(appUser));
 
-        UserDetails userDetails = userDetailsService.loadUserByUsername("testuser");
+        UserDetails userDetails = userDetailsService.loadUserByUsername(testEmail);
 
         assertNotNull(userDetails);
-        assertEquals("testuser", userDetails.getUsername());
+        assertEquals(testEmail, userDetails.getUsername()); // Spring Security UserDetails.getUsername() will be our email
         assertEquals("encodedpassword", userDetails.getPassword());
-        assertTrue(userDetails.getAuthorities().isEmpty()); // Assuming no roles/authorities yet
-        verify(userService, times(1)).findByUsername("testuser");
+        assertTrue(userDetails.getAuthorities().contains(new SimpleGrantedAuthority("ROLE_USER")));
+        assertEquals(1, userDetails.getAuthorities().size());
+        verify(userService, times(1)).findByEmail(testEmail);
     }
 
     @Test
     void loadUserByUsername_UserNotFound_ThrowsUsernameNotFoundException() {
-        when(userService.findByUsername("nonexistentuser")).thenReturn(Optional.empty());
+        String nonExistentEmail = "nonexistent@example.com";
+        when(userService.findByEmail(nonExistentEmail)).thenReturn(Optional.empty());
 
         UsernameNotFoundException thrown = assertThrows(UsernameNotFoundException.class,
-                () -> userDetailsService.loadUserByUsername("nonexistentuser"));
+                () -> userDetailsService.loadUserByUsername(nonExistentEmail));
 
-        assertEquals("User not found", thrown.getMessage());
-        verify(userService, times(1)).findByUsername("nonexistentuser");
+        assertEquals("User not found with email: " + nonExistentEmail, thrown.getMessage());
+        verify(userService, times(1)).findByEmail(nonExistentEmail);
     }
 } 
