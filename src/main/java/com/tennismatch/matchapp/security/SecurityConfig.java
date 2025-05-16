@@ -1,4 +1,4 @@
-package com.tennismatch.matchapp.config;
+package com.tennismatch.matchapp.security;
 
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;

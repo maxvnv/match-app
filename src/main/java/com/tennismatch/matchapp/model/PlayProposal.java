@@ -35,8 +35,9 @@ public class PlayProposal {
     @Lob // For potentially longer text
     private String notes;
 
+    @Enumerated(EnumType.STRING)
     @Column(nullable = false)
-    private String status; // E.g., "OPEN", "MATCHED", "CANCELLED". Consider an Enum later.
+    private ProposalStatus status;
 
     @CreationTimestamp
     @Column(nullable = false, updatable = false)
@@ -45,6 +46,9 @@ public class PlayProposal {
     @UpdateTimestamp
     @Column(nullable = false)
     private LocalDateTime updatedAt;
+
+    @OneToOne(mappedBy = "playProposal", cascade = CascadeType.ALL, fetch = FetchType.LAZY)
+    private Match confirmedMatch;
 
     // Relationships (e.g., with Match requests or confirmed Match) will be added later
 } 

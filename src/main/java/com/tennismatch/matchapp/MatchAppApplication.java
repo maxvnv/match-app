@@ -1,4 +1,4 @@
-package com.tennis_match.match_app;
+package com.tennismatch.matchapp;
 
 import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;

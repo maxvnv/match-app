@@ -64,7 +64,7 @@ This plan integrates existing tasks with new requirements for AWS deployment, ob
     * Reasoning: Decouples API request structure from entity model, allows for specific validation.
 * [x] Implement basic `UserService` (`registerUser`, `findByUsername`, `findByEmail`) including password encoding with `BCryptPasswordEncoder`.
     * Reasoning: Encapsulates user registration logic. BCrypt is a strong, widely accepted hashing algorithm.
-* [ ] Implement `UserController` to expose registration endpoint.
+* [x] Implement `UserController` to expose registration endpoint.
     * [L] Explain REST controller basics, request mappings, request bodies, response entities.
 
 ### Phase 2: Core Feature Implementation

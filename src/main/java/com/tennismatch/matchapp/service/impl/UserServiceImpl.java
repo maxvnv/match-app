@@ -33,14 +33,7 @@ public class UserServiceImpl implements UserService {
             throw new IllegalArgumentException("Email already in use");
         }
         // Create and save new user
-        User user = new User();
-        user.setUsername(dto.getUsername());
-        user.setEmail(dto.getEmail());
-        user.setPassword(passwordEncoder.encode(dto.getPassword()));
-        user.setFirstName(dto.getFirstName());
-        user.setLastName(dto.getLastName());
-        user.setCity(dto.getCity());
-        user.setTennisLevel(dto.getTennisLevel());
+        User user = createUser(dto);
         return userRepository.save(user);
     }
 
@@ -52,5 +45,17 @@ public class UserServiceImpl implements UserService {
     @Override
     public Optional<User> findByEmail(String email) {
         return userRepository.findByEmail(email);
+    }
+
+    private User createUser(UserRegistrationDto dto) {
+        User user = new User();
+        user.setUsername(dto.getUsername());
+        user.setEmail(dto.getEmail());
+        user.setPassword(passwordEncoder.encode(dto.getPassword()));
+        user.setFirstName(dto.getFirstName());
+        user.setLastName(dto.getLastName());
+        user.setCity(dto.getCity());
+        user.setTennisLevel(dto.getTennisLevel());
+        return user;
     }
 } 

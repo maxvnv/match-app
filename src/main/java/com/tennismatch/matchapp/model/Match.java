@@ -28,8 +28,9 @@ public class Match {
     @JoinColumn(name = "requesting_user_id", nullable = false)
     private User requestingUser;
 
+    @Enumerated(EnumType.STRING)
     @Column(nullable = false)
-    private String status; // e.g., "PENDING", "ACCEPTED", "DECLINED"
+    private MatchStatus status;
 
     @CreationTimestamp
     @Column(nullable = false, updatable = false)
@@ -38,4 +39,12 @@ public class Match {
     @UpdateTimestamp
     @Column(nullable = false)
     private LocalDateTime updatedAt;
+
+    public User getPlayerOne() {
+        return this.playProposal != null ? this.playProposal.getProposingUser() : null;
+    }
+
+    public User getPlayerTwo() {
+        return this.requestingUser;
+    }
 } 
