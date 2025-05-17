@@ -31,27 +31,38 @@ This plan outlines the steps to develop the MVP backend for the Tennis Match App
 *   [x] 0.8. Developer Experience - API Documentation & Interaction (NEW)
     *   [x] 0.8.1. Integrate Swagger UI using `springdoc-openapi-starter-webmvc-ui`.
     *   [x] 0.8.2. Verify Swagger UI is accessible (e.g., at `/swagger-ui.html`).
+*   [x] 0.9. Local Development Environment with Docker Compose (NEW SECTION)
+    *   [x] 0.9.1. Dockerize the Spring Boot application (`match-app`) by creating a `Dockerfile`.
+    *   [x] 0.9.2. Configure Prometheus (`prometheus.yml`) for metrics scraping.
+    *   [x] 0.9.3. Configure Loki (`loki-config.yml`) and Promtail (`promtail-config.yml`) for log aggregation and shipping.
+    *   [x] 0.9.4. Configure Grafana (`datasources.yml`, `dashboards.yml`, optional dashboard JSON) for metrics and log visualization.
+    *   [x] 0.9.5. Create `docker-compose.yml` to orchestrate `match-app`, Prometheus, Loki, Promtail, and Grafana.
+    *   [x] 0.9.6. Implement healthcheck for `match-app` in `docker-compose.yml` and ensure `curl` is available in the app image.
+    *   [x] 0.9.7. Set up Spring Boot DevTools and volume mounts in `docker-compose.yml` for application live reload/restart.
+    *   [x] 0.9.8. Document the local setup process and configurations in `LOCAL_SETUP.md`.
+    *   [x] 0.9.9. (Covered by 0.9.1-0.9.8) Run Prometheus locally (via Docker Compose) and configure it to scrape the app's metrics endpoint. (Formerly 0.6.4)
+    *   [x] 0.9.10. (Covered by 0.9.1-0.9.8) Run Grafana locally (via Docker Compose) and connect it to Prometheus. Create/Import a simple dashboard to visualize basic metrics. (Formerly 0.6.5)
 
 ## Phase 1: User Management (Core)
 
-*   [ ] 1.1. User Entity & Repository:
-    *   [ ] 1.1.1. Define `User` entity (`@Entity`) with fields: `id`, `email` (unique), `password`, `firstName`, `lastName`, `ntrpLevel`, `homeTown`, `age`, `sex`, `roles` (e.g., `USER`, `ADMIN`).
-        *   NTRP Level: Consider using an Enum.
-        *   Sex: Consider using an Enum.
-        *   Password: Will be hashed.
-    *   [ ] 1.1.2. Create `UserRepository` extending `JpaRepository`.
-    *   [ ] 1.1.3. Write unit tests for `UserRepository` (e.g., findByEmail).
+*   [x] 1.1. User Entity & Repository:
+    *   [x] 1.1.1. Define `User` entity (`@Entity`) with fields: `id`, `email` (unique), `password`, `firstName`, `lastName`, `ntrpLevel`, `homeTown`, `age`, `sex`, `roles` (e.g., `USER`, `ADMIN`).
+        *   NTRP Level: Used an Enum.
+        *   Sex: Used an Enum.
+        *   Password: Hashed.
+    *   [x] 1.1.2. Create `UserRepository` extending `JpaRepository`.
+    *   [x] 1.1.3. Write unit tests for `UserRepository` (e.g., findByEmail). (Partially done, need to fix test failures)
 *   [ ] 1.2. Registration (Email/Password):
-    *   [ ] 1.2.1. Create `RegisterRequest` DTO (email, password, firstName, lastName, ntrpLevel, homeTown, age, sex).
-    *   [ ] 1.2.2. Implement `UserService` with a `registerUser` method:
+    *   [ ] 1.2.1. Create `RegisterRequest` DTO (email, password, firstName, lastName, ntrpLevel, homeTown, age, sex). (Done)
+    *   [ ] 1.2.2. Implement `UserService` with a `registerUser` method: (Done, needs test fixes)
         *   Validate input (using `@Valid` and validation annotations on DTO).
         *   Check if email already exists.
         *   Encode password using `PasswordEncoder` (BCrypt).
         *   Save new user.
-    *   [ ] 1.2.3. Create `AuthController` with a `/api/auth/register` endpoint.
+    *   [ ] 1.2.3. Create `AuthController` with a `/api/auth/register` endpoint. (Done, needs test fixes)
     *   [ ] 1.2.4. Implement password policies (programmatically or using Spring Security features if applicable, though complexity might be deferred).
-    *   [ ] 1.2.5. Write unit tests for `UserService.registerUser`.
-    *   [ ] 1.2.6. Write integration tests for the registration endpoint.
+    *   [ ] 1.2.5. Write unit tests for `UserService.registerUser`. (Partially done, needs test fixes)
+    *   [ ] 1.2.6. Write integration tests for the registration endpoint. (Partially done, needs test fixes)
 *   [ ] 1.3. Login (Email/Password) & JWT:
     *   [ ] 1.3.1. Create `LoginRequest` DTO (email, password).
     *   [ ] 1.3.2. Create `JwtResponse` DTO (accessToken, tokenType, userDetails).
@@ -60,29 +71,29 @@ This plan outlines the steps to develop the MVP backend for the Tennis Match App
         *   Store JWT secret key securely (e.g., in application properties, later in environment variables/AWS Secrets Manager).
         *   Define token expiration.
     *   [ ] 1.3.5. Configure Spring Security:
-        *   Implement `UserDetailsService` to load user by email from `UserRepository`.
+        *   Implement `UserDetailsService` to load user by email from `UserRepository`. (Done, needs test fixes)
         *   Configure `AuthenticationManager` and `PasswordEncoder` beans.
         *   Create a JWT authentication filter (`OncePerRequestFilter`) to validate tokens and set `SecurityContextHolder`.
         *   Update `SecurityConfig` to use JWT authentication, define public (`/api/auth/**`) and protected endpoints.
-    *   [ ] 1.3.6. Implement login endpoint in `AuthController` (`/api/auth/login`):
-        *   Authenticate user using `AuthenticationManager`.
-        *   Generate JWT upon successful authentication.
+    *   [ ] 1.3.6. Implement login endpoint in `AuthController` (`/api/auth/login`):\
+        *   Authenticate user using `AuthenticationManager`.\
+        *   Generate JWT upon successful authentication.\
         *   Return `JwtResponse`.
     *   [ ] 1.3.7. (Learning) Understand JWT flow, Spring Security `AuthenticationManager`, `UserDetailsService`, and custom filter integration.
     *   [ ] 1.3.8. Write unit tests for `JwtTokenProvider`.
     *   [ ] 1.3.9. Write integration tests for the login endpoint and accessing a secured endpoint with/without a token.
 *   [ ] 1.4. User Profile Management:
     *   [ ] 1.4.1. Create `UserProfileDto` (firstName, lastName, ntrpLevel, homeTown, age, sex).
-    *   [ ] 1.4.2. Implement `UserService` methods:
-        *   `getCurrentUserProfile()`: Get details of the currently logged-in user.
+    *   [ ] 1.4.2. Implement `UserService` methods:\
+        *   `getCurrentUserProfile()`: Get details of the currently logged-in user.\
         *   `updateCurrentUserProfile(UserProfileDto)`: Update profile details for the logged-in user.
-    *   [ ] 1.4.3. Create `UserController` with endpoints:
-        *   `GET /api/users/me` (secured)
+    *   [ ] 1.4.3. Create `UserController` with endpoints:\
+        *   `GET /api/users/me` (secured)\
         *   `PUT /api/users/me` (secured)
     *   [ ] 1.4.4. Write unit and integration tests for profile management.
 *   [ ] 1.5. (Stretch Goal for Phase 1 / Early Phase 2) Gmail Login (OAuth2/OIDC):
     *   [ ] 1.5.1. Add Spring Boot OAuth2 client dependency.
-    *   [ ] 1.5.2. Configure Google as an OAuth2 provider in `application.properties` (client-id, client-secret).
+    *   [ ] 1.5.2. Configure Google as an OAuth2 provider in `application.properties` (client-id, client-secret).\
         *   (Learning) Create OAuth2 credentials in Google Cloud Console.
     *   [ ] 1.5.3. Extend Spring Security configuration to support OAuth2 login.
     *   [ ] 1.5.4. Implement a custom `OAuth2UserService` to handle user creation/linking in your database after successful Google authentication.
@@ -98,10 +109,10 @@ This plan outlines the steps to develop the MVP backend for the Tennis Match App
 *   [ ] 2.2. Propose a Match:
     *   [ ] 2.2.1. Create `CreateMatchProposalRequest` DTO.
     *   [ ] 2.2.2. Create `MatchProposalResponse` DTO.
-    *   [ ] 2.2.3. Implement `MatchProposalService` method `createProposal(CreateMatchProposalRequest, User principal)`:
-        *   Validate input.
-        *   Set `proposingUser` from the authenticated principal.
-        *   Set initial `status` to `OPEN`.
+    *   [ ] 2.2.3. Implement `MatchProposalService` method `createProposal(CreateMatchProposalRequest, User principal)`:\
+        *   Validate input.\
+        *   Set `proposingUser` from the authenticated principal.\
+        *   Set initial `status` to `OPEN`.\
         *   Save proposal.
     *   [ ] 2.2.4. Create `MatchProposalController` with `POST /api/match-proposals` endpoint (secured).
     *   [ ] 2.2.5. Unit and integration tests.
@@ -110,46 +121,46 @@ This plan outlines the steps to develop the MVP backend for the Tennis Match App
     *   [ ] 2.3.2. `MatchProposalController` endpoint `GET /api/match-proposals/my-active` (secured).
     *   [ ] 2.3.3. Unit and integration tests.
 *   [ ] 2.4. Cancel Own Proposal:
-    *   [ ] 2.4.1. `MatchProposalService` method `cancelMyProposal(Long proposalId, User principal)`:
-        *   Ensure proposal exists, belongs to the user, and is in `OPEN` state.
+    *   [ ] 2.4.1. `MatchProposalService` method `cancelMyProposal(Long proposalId, User principal)`:\
+        *   Ensure proposal exists, belongs to the user, and is in `OPEN` state.\
         *   Change status to `CANCELLED`.
     *   [ ] 2.4.2. `MatchProposalController` endpoint `PUT /api/match-proposals/{proposalId}/cancel` (secured).
     *   [ ] 2.4.3. Unit and integration tests.
 *   [ ] 2.5. Search for Match Proposals:
-    *   [ ] 2.5.1. `MatchProposalService` method `searchProposals(LocalDate date, LocalTime time, NtrpLevel ntrp, String location)`:
-        *   Implement filtering logic (JPA Specifications or Querydsl recommended for complex queries).
-        *   Filter by `status = OPEN`.
+    *   [ ] 2.5.1. `MatchProposalService` method `searchProposals(LocalDate date, LocalTime time, NtrpLevel ntrp, String location)`:\
+        *   Implement filtering logic (JPA Specifications or Querydsl recommended for complex queries).\
+        *   Filter by `status = OPEN`.\
         *   Exclude proposals from the current user.
     *   [ ] 2.5.2. `MatchProposalController` endpoint `GET /api/match-proposals/search` (secured) with query parameters.
     *   [ ] 2.5.3. Unit and integration tests for various search criteria.
 *   [ ] 2.6. Accept a Match Proposal:
-    *   [ ] 2.6.1. Define `AcceptedMatch` entity: `id`, `matchProposal (OneToOne)`, `acceptingUser (User)`, `acceptedTimestamp`. (Or add `acceptingUser` and `acceptedTimestamp` directly to `MatchProposal` and update its status). Let's opt for adding to `MatchProposal` for simplicity in MVP.
+    *   [ ] 2.6.1. Define `AcceptedMatch` entity: `id`, `matchProposal (OneToOne)`, `acceptingUser (User)`, `acceptedTimestamp`. (Or add `acceptingUser` and `acceptedTimestamp` directly to `MatchProposal` and update its status). Let\'s opt for adding to `MatchProposal` for simplicity in MVP.\
         *   Update `MatchProposal` entity: add `acceptingUser (User, nullable)`, `acceptedTimestamp (nullable)`.
-    *   [ ] 2.6.2. `MatchProposalService` method `acceptProposal(Long proposalId, User acceptingUser)`:
-        *   Ensure proposal exists, is `OPEN`.
-        *   Ensure accepting user is not the proposing user.
-        *   Set `acceptingUser`, `acceptedTimestamp`, and update `status` to `ACCEPTED`.
+    *   [ ] 2.6.2. `MatchProposalService` method `acceptProposal(Long proposalId, User acceptingUser)`:\
+        *   Ensure proposal exists, is `OPEN`.\
+        *   Ensure accepting user is not the proposing user.\
+        *   Set `acceptingUser`, `acceptedTimestamp`, and update `status` to `ACCEPTED`.\
         *   (Future: Notification to proposer).
     *   [ ] 2.6.3. `MatchProposalController` endpoint `PUT /api/match-proposals/{proposalId}/accept` (secured).
     *   [ ] 2.6.4. Unit and integration tests.
 
 ## Phase 3: Post-Match Actions
 
-*   [ ] 3.1. Match Entity & Repository (if not part of `MatchProposal`):
-    *   For MVP, we'll consider a `MatchProposal` with status `COMPLETED` and score details as the "Match Record".
+*   [ ] 3.1. Match Entity & Repository (if not part of `MatchProposal`):\
+    *   For MVP, we\'ll consider a `MatchProposal` with status `COMPLETED` and score details as the \"Match Record\".\
     *   Update `MatchProposal` entity: add `proposerScore`, `acceptorScore` (String or structured type).
 *   [ ] 3.2. Enter Match Score:
     *   [ ] 3.2.1. Create `EnterScoreRequest` DTO (`proposalId`, `scorePlayer1`, `scorePlayer2`).
-    *   [ ] 3.2.2. `MatchProposalService` method `enterScore(Long proposalId, String score, User principal)`:
-        *   Ensure proposal exists and its status is `ACCEPTED`.
-        *   Ensure the principal is either the proposer or acceptor.
-        *   Update the score fields (e.g., `proposerScore`, `acceptorScore` - decide how to map DTO fields to entity based on who submitted).
-        *   Change status to `COMPLETED`.
+    *   [ ] 3.2.2. `MatchProposalService` method `enterScore(Long proposalId, String score, User principal)`:\
+        *   Ensure proposal exists and its status is `ACCEPTED`.\
+        *   Ensure the principal is either the proposer or acceptor.\
+        *   Update the score fields (e.g., `proposerScore`, `acceptorScore` - decide how to map DTO fields to entity based on who submitted).\
+        *   Change status to `COMPLETED`.\
         *   (Future: Notification to the other player, confirmation).
     *   [ ] 3.2.3. `MatchProposalController` endpoint `POST /api/match-proposals/{proposalId}/score` (secured).
     *   [ ] 3.2.4. Unit and integration tests.
 *   [ ] 3.3. View Match History:
-    *   [ ] 3.3.1. `MatchProposalService` method `getMyMatchHistory(User principal)`:
+    *   [ ] 3.3.1. `MatchProposalService` method `getMyMatchHistory(User principal)`:\
         *   Retrieve `MatchProposal` entities where `status = COMPLETED` and the principal is either `proposingUser` or `acceptingUser`.
     *   [ ] 3.3.2. `MatchProposalController` endpoint `GET /api/matches/history` (secured).
     *   [ ] 3.3.3. Response DTO should clearly show opponent, date, score, location.
@@ -157,12 +168,12 @@ This plan outlines the steps to develop the MVP backend for the Tennis Match App
 
 ## Phase 4: Observability Enhancement
 
-*   [ ] 4.1. Structured Logging for OpenSearch:
-    *   [ ] 4.1.1. Ensure Logback (or chosen logging framework) is configured for JSON output.
+*   [ ] 4.1. Structured Logging for OpenSearch (via Docker Compose with Loki for local, AWS OpenSearch for Prod):
+    *   [x] 4.1.1. Ensure Logback (or chosen logging framework) is configured for JSON output (Done for local with Loki).
     *   [ ] 4.1.2. Include important context in logs (e.g., user ID, trace ID).
-    *   [ ] 4.1.3. (Learning) Set up a local OpenSearch and OpenSearch Dashboards instance (e.g., via Docker).
-    *   [ ] 4.1.4. (Learning) Configure a log shipping agent (e.g., Filebeat, or app directly sends logs if feasible for local setup) to send logs to OpenSearch.
-    *   [ ] 4.1.5. Create basic dashboards in OpenSearch Dashboards to view and search logs.
+    *   [x] 4.1.3. (Learning) Set up a local Log Management (Loki/Promtail via Docker Compose).
+    *   [x] 4.1.4. (Learning) Log shipping agent (Promtail) is configured in Docker Compose.
+    *   [x] 4.1.5. Create basic dashboards in Grafana (connected to Loki) to view and search logs.
 *   [ ] 4.2. Custom Metrics with Micrometer:
     *   [ ] 4.2.1. Identify key business metrics to track (e.g., user registrations, proposals created, matches played).
     *   [ ] 4.2.2. Implement custom counters and timers using Micrometer in relevant services.
@@ -170,7 +181,7 @@ This plan outlines the steps to develop the MVP backend for the Tennis Match App
     *   [ ] 4.2.4. (Learning) Explore different types of Micrometer meters.
 *   [ ] 4.3. Distributed Tracing (Optional for MVP, but good to learn):
     *   [ ] 4.3.1. Add Spring Boot Actuator and Micrometer Tracing (with Brave or OpenTelemetry) dependencies.
-    *   [ ] 4.3.2. Configure a tracing system (e.g., Jaeger or Zipkin locally via Docker).
+    *   [ ] 4.3.2. Configure a tracing system (e.g., Jaeger or Zipkin locally via Docker Compose, if added).
     *   [ ] 4.3.3. Configure the application to export traces.
     *   [ ] 4.3.4. Observe traces for a multi-service interaction (even if simulated locally).
 
@@ -178,14 +189,14 @@ This plan outlines the steps to develop the MVP backend for the Tennis Match App
 
 *   [ ] 5.1. Review all endpoints for correct authorization (e.g., ensuring users can only modify their own data).
 *   [ ] 5.2. Implement HTTPS for all communication (will be handled by AWS Load Balancer in production, but good to be aware of for local dev if needed via self-signed certs).
-*   [ ] 5.3. Protection against common vulnerabilities:
-    *   [ ] 5.3.1. XSS: Ensure proper output encoding (Spring Boot helps, but be mindful with custom JS if any).
-    *   [ ] 5.3.2. CSRF: Spring Security provides protection, verify it's enabled for stateful parts (if any, JWT is stateless but login form might need it).
+*   [ ] 5.3. Protection against common vulnerabilities:\
+    *   [ ] 5.3.1. XSS: Ensure proper output encoding (Spring Boot helps, but be mindful with custom JS if any).\
+    *   [ ] 5.3.2. CSRF: Spring Security provides protection, verify it\'s enabled for stateful parts (if any, JWT is stateless but login form might need it).\
     *   [ ] 5.3.3. SQL Injection: JPA/Hibernate helps prevent this, but review any custom queries.
-*   [ ] 5.4. Secure sensitive configuration (JWT secret, database credentials):
-    *   [ ] 5.4.1. Use environment variables locally.
+*   [ ] 5.4. Secure sensitive configuration (JWT secret, database credentials):\
+    *   [x] 5.4.1. Use environment variables locally (demonstrated in `docker-compose.yml`).\
     *   [ ] 5.4.2. Plan for AWS Secrets Manager for production.
-*   [ ] 5.5. Dependency Vulnerability Scanning:
+*   [ ] 5.5. Dependency Vulnerability Scanning:\
     *   [ ] 5.5.1. Integrate a tool like OWASP Dependency-Check (Gradle plugin) into the CI pipeline.
 *   [ ] 5.6. Implement Rate Limiting (Optional for MVP, consider for API Gateway level).
 *   [ ] 5.7. Review password policies implementation.
@@ -193,50 +204,50 @@ This plan outlines the steps to develop the MVP backend for the Tennis Match App
 
 ## Phase 6: Deployment Preparation (Terraform & AWS)
 
-*   [ ] 6.1. Database Choice:
-    *   [ ] 6.1.1. Switch from H2 to PostgreSQL for production-like environment.
-    *   [ ] 6.1.2. Update `application.properties` (or profiles) for PostgreSQL connection.
-    *   [ ] 6.1.3. (Learning) Run PostgreSQL locally using Docker.
-*   [ ] 6.2. Containerize the Application:
-    *   [ ] 6.2.1. Create a `Dockerfile` to build a Docker image for the Spring Boot application.
-    *   [ ] 6.2.2. Test building and running the Docker image locally.
-*   [ ] 6.3. Introduction to Terraform:
-    *   [ ] 6.3.1. (Learning) Install Terraform.
-    *   [ ] 6.3.2. (Learning) Understand basic Terraform concepts: providers, resources, variables, outputs.
+*   [ ] 6.1. Database Choice:\
+    *   [ ] 6.1.1. Switch from H2 to PostgreSQL for production-like environment.\
+    *   [ ] 6.1.2. Update `application.properties` (or profiles) for PostgreSQL connection.\
+    *   [ ] 6.1.3. (Learning) Run PostgreSQL locally using Docker (can be added to existing `docker-compose.yml`).
+*   [x] 6.2. Containerize the Application:\
+    *   [x] 6.2.1. Create a `Dockerfile` to build a Docker image for the Spring Boot application (Done for local dev setup).\
+    *   [x] 6.2.2. Test building and running the Docker image locally (Done as part of Docker Compose setup).
+*   [ ] 6.3. Introduction to Terraform:\
+    *   [ ] 6.3.1. (Learning) Install Terraform.\
+    *   [ ] 6.3.2. (Learning) Understand basic Terraform concepts: providers, resources, variables, outputs.\
     *   [ ] 6.3.3. Set up AWS CLI and configure credentials.
-*   [ ] 6.4. Terraform for AWS Infrastructure (Simplified MVP):
-    *   [ ] 6.4.1. VPC, Subnets (public/private).
-    *   [ ] 6.4.2. RDS for PostgreSQL.
-        *   (Learning) How to manage database credentials securely (e.g., Terraform variable passed to RDS, then app reads from AWS Secrets Manager).
-    *   [ ] 6.4.3. ECS (Fargate) or Elastic Beanstalk for running the application container. Start with Elastic Beanstalk for simplicity if preferred.
-    *   [ ] 6.4.4. Application Load Balancer (ALB) with HTTPS.
-    *   [ ] 6.4.5. Security Groups for RDS, ALB, App.
+*   [ ] 6.4. Terraform for AWS Infrastructure (Simplified MVP):\
+    *   [ ] 6.4.1. VPC, Subnets (public/private).\
+    *   [ ] 6.4.2. RDS for PostgreSQL.\
+        *   (Learning) How to manage database credentials securely (e.g., Terraform variable passed to RDS, then app reads from AWS Secrets Manager).\
+    *   [ ] 6.4.3. ECS (Fargate) or Elastic Beanstalk for running the application container. Start with Elastic Beanstalk for simplicity if preferred.\
+    *   [ ] 6.4.4. Application Load Balancer (ALB) with HTTPS.\
+    *   [ ] 6.4.5. Security Groups for RDS, ALB, App.\
     *   [ ] 6.4.6. (Optional) S3 for storing build artifacts if not using GitLab registry directly with AWS.
-*   [ ] 6.5. CI/CD Pipeline Enhancement for AWS Deployment:
-    *   [ ] 6.5.1. Add a deployment stage to `.gitlab-ci.yml`.
-    *   [ ] 6.5.2. Build Docker image and push to a container registry (e.g., GitLab Container Registry, AWS ECR).
+*   [ ] 6.5. CI/CD Pipeline Enhancement for AWS Deployment:\
+    *   [ ] 6.5.1. Add a deployment stage to `.gitlab-ci.yml`.\
+    *   [ ] 6.5.2. Build Docker image and push to a container registry (e.g., GitLab Container Registry, AWS ECR).\
     *   [ ] 6.5.3. Script to trigger deployment to AWS (e.g., update ECS service, deploy to Beanstalk).
-*   [ ] 6.6. Logging & Monitoring in AWS:
-    *   [ ] 6.6.1. Configure application logs to be sent to AWS CloudWatch Logs from ECS/Beanstalk.
-    *   [ ] 6.6.2. Explore options for running Prometheus/Grafana in AWS or using AWS managed services (e.g., Amazon Managed Service for Prometheus, Amazon Managed Grafana). For MVP, continue local/self-hosted if simpler, or basic CloudWatch metrics.
+*   [ ] 6.6. Logging & Monitoring in AWS:\
+    *   [ ] 6.6.1. Configure application logs to be sent to AWS CloudWatch Logs from ECS/Beanstalk.\
+    *   [ ] 6.6.2. Explore options for running Prometheus/Grafana in AWS or using AWS managed services (e.g., Amazon Managed Service for Prometheus, Amazon Managed Grafana). For MVP, continue local/self-hosted if simpler, or basic CloudWatch metrics.\
     *   [ ] 6.6.3. If using OpenSearch, plan for AWS OpenSearch Service.
 
 ## Phase 7: Documentation & Review
 
-*   [ ] 7.1. Update/Create API Documentation (e.g., using SpringDoc OpenAPI).
-    *   [ ] 7.1.1. Add `springdoc-openapi-starter-webmvc-ui` dependency.
-    *   [ ] 7.1.2. Access Swagger UI at `/swagger-ui.html`. Annotate DTOs and controllers for better docs.
+*   [x] 7.1. Update/Create API Documentation (e.g., using SpringDoc OpenAPI).\
+    *   [x] 7.1.1. Add `springdoc-openapi-starter-webmvc-ui` dependency.\
+    *   [x] 7.1.2. Access Swagger UI at `/swagger-ui.html`. Annotate DTOs and controllers for better docs. (Initial setup done, needs ongoing updates as API evolves)\
 *   [ ] 7.2. Review and update `README.md`.
 *   [ ] 7.3. Review all learning points and ensure understanding.
 *   [ ] 7.4. Final code cleanup and refactoring.
 
 ## General Considerations Throughout:
 
-*   **Testing:** Write unit and integration tests for all new functionalities. Aim for good test coverage.
+*   **Testing:** Write unit and integration tests for all new functionalities. Aim for good test coverage. **(CURRENT PRIORITY: Fix failing tests in Phase 1)**
 *   **Code Quality:** Follow Java best practices, keep code clean and maintainable. Use static analysis tools if possible (e.g., SonarLint IDE plugin).
 *   **Incremental Commits:** Commit changes frequently with clear messages.
 *   **Error Handling:** Implement consistent and user-friendly error handling. Use global exception handlers (`@ControllerAdvice`).
 *   **Configuration Management:** Use Spring profiles for different environments (dev, test, prod).
 *   **Stream API:** Prefer Stream API for collections processing where appropriate.
-*   **Background Builds:** After every significant code change, manually trigger or ensure CI triggers a build.
+*   **Background Builds:** After every significant code change, manually trigger or ensure CI triggers a build. (Our Docker Compose setup handles local builds efficiently for dev.)
 *   **Documentation Updates:** Keep this `PLAN.md` and `REQ.md` updated as development evolves or decisions change. Update `README.md` as major milestones are hit. 

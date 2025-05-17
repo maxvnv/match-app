@@ -1,0 +1,22 @@
+apiVersion: 1
+
+datasources:
+  - name: Prometheus
+    type: prometheus
+    access: proxy # Grafana backend handles requests
+    url: http://prometheus:9090 # Prometheus service name and port
+    isDefault: true
+    editable: true # Allow edits in Grafana UI
+  - name: Loki
+    type: loki
+    access: proxy
+    url: http://loki:3100 # Loki service name and port
+    jsonData:
+      # Optional: Derived fields can help parse log lines, e.g., JSON logs
+      # derivedFields:
+      #   - datasourceUid: '<LOKI_UID>' # Will be replaced by Grafana
+      #     matcherRegex: '"level":"(info|warn|error|debug)"'
+      #     name: level
+      #     url: '' # No URL needed for simple extraction
+      maxLines: 1000 # Default number of log lines to show
+    editable: true

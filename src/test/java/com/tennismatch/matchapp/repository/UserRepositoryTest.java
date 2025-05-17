@@ -1,6 +1,8 @@
 package com.tennismatch.matchapp.repository;
 
 import com.tennismatch.matchapp.model.NtrpLevel;
+import com.tennismatch.matchapp.model.Role;
+import com.tennismatch.matchapp.model.Sex;
 import com.tennismatch.matchapp.model.User;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -8,6 +10,7 @@ import org.springframework.boot.test.autoconfigure.orm.jpa.DataJpaTest;
 import org.springframework.boot.test.autoconfigure.orm.jpa.TestEntityManager;
 
 import java.util.Optional;
+import java.util.Set;
 
 import static org.assertj.core.api.Assertions.assertThat;
 
@@ -30,6 +33,9 @@ public class UserRepositoryTest {
                 .lastName("User")
                 .ntrpLevel(NtrpLevel.INTERMEDIATE_3_0)
                 .homeTown("Testville")
+                .age(25)
+                .sex(Sex.MALE)
+                .roles(Set.of(Role.ROLE_USER))
                 .build();
         entityManager.persist(user);
         entityManager.flush();
@@ -61,6 +67,9 @@ public class UserRepositoryTest {
                 .lastName("User")
                 .ntrpLevel(NtrpLevel.ADVANCED_4_0)
                 .homeTown("Existown")
+                .age(30)
+                .sex(Sex.MALE)
+                .roles(Set.of(Role.ROLE_USER))
                 .build();
         entityManager.persist(user);
         entityManager.flush();

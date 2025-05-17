@@ -2,6 +2,7 @@ package com.tennismatch.matchapp.service.impl;
 
 import com.tennismatch.matchapp.dto.RegisterRequest;
 import com.tennismatch.matchapp.model.NtrpLevel;
+import com.tennismatch.matchapp.model.Role;
 import com.tennismatch.matchapp.model.Sex;
 import com.tennismatch.matchapp.model.User;
 import com.tennismatch.matchapp.repository.UserRepository;
@@ -17,6 +18,7 @@ import org.springframework.security.crypto.password.PasswordEncoder;
 import java.util.Optional;
 import java.util.Set;
 
+import static com.tennismatch.matchapp.model.Role.ROLE_USER;
 import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.anyString;
@@ -60,7 +62,7 @@ class UserServiceImplTest {
                 .homeTown(registerRequest.getHomeTown())
                 .age(registerRequest.getAge())
                 .sex(registerRequest.getSex())
-                .roles(Set.of("USER"))
+                .roles(Set.of(ROLE_USER))
                 .build();
     }
 
@@ -84,7 +86,7 @@ class UserServiceImplTest {
         assertEquals("encodedpassword", result.getPassword());
         assertEquals(registerRequest.getFirstName(), result.getFirstName());
         assertEquals(registerRequest.getNtrpLevel(), result.getNtrpLevel());
-        assertTrue(result.getRoles().contains("USER"));
+        assertTrue(result.getRoles().contains(ROLE_USER));
         assertEquals(1, result.getRoles().size());
         assertNotNull(result.getId()); // Ensure ID is set
 

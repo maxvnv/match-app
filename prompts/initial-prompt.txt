@@ -1,22 +1,51 @@
-I'm working on a tennis match app that would match tennis players in a city for a match. For now I'm working on the backend component, however this backend will be serving front end (react) and mobile ios app, both to be developed, but good to keep in mind. 
+I would like to create a tennis match app that would match tennis players in a city for a match. I've notice that in my city (Kraków), recreational tennis players are struggling to find a match, and 
+are looking for people in facebook groups, which is inconvenient, and I would like to create a solution for this problem.
 
-I have a sceleton for a project with some code already done. This was mainly done my an ai agent. I'll attach the git ingested file for it. 
+The main requirements for MVP for this applications are:
+- User is able to register and login using either his credentials (email and password or login using gmail)
+- User is able to fill in additional information about him: name, surname, current tennis ntrp level, his home town, age, sex.
+- User is able to propose a play for a certain day, time, and optionally tennis court
+- User is able to look for proposals made by other users and accept
+- Once the match is played, either of the users (proposing or accepting) is able to enter the match details (score)
+- Match history is visible for both players
 
-Notice there are two readme files that describe the business requirements, technical vision and checklist of what's been already done and a plan for future work. These files are DEVELOPMENT_LOG .md and README.md. 
+Technical stack for backend should be 
+- java 21
+- gradle
+- spring
+- H2 / Postgres
+- you are encouraged to propose any other supporting library you think will be suitable
 
-I'm planning to continue working onit with another ai agent, and I need you to create a detailed plan of actions (a guide) for this ai agent so it can pick up from there and guide me effectively. 
+Observability:
+- Micrometer
+- Prometheus
+- Grafana
+- OpenSearch (logs)
 
-As part of this guide, I need
+Deployment:
+- Terraform
+- AWS
+- gitlab (CI/CD)
 
-- analize the existing code
-- analize these two *.md files, and combine the content in them, making it a single clear document
-- extract the business requirements to a separate .md file
-- extract the technical part to a separate .md file
-- in the technical file I want to have 1) a high level technical overview of the project 2) a detailed development plan along with checklist 3) under every technical decision I need a consice but meaningful reasoning as to why this decision was made as well as why not alternatives
-- keep in mind that this technical file will be serving as my personal reference point as well as a guide for AI agent. You may consider to create a separate file with just instructions for ai agent, up to you. 
-- I want ai agent to update the mentioned documentation every time we make a change (e.g. check the checklist, or update the development plan if we deviate from the existing one)
+For iOS and Reach (front end) stack, I would like to ask you to come up with the technical stack yourself, keeping in mind that I am a backend engineer and I know very minimal when
+if comes to front end or app development.
+
+I have a sceleton for a project with some code already done. It's in the current project (match-app).
+
+With this in mind, I need you to 
+- Analize the existing code
+- Come up with detailed business requirements for the project and write them to REQ.md file
+- Evaluate the existing code, and the detailed business requirements that you've compiled, and think about a few possible development approaches before landing on the best one.
+Provide reasoning on why this would be the best approach. Remember, first I would like to work on the MVP for the backend app until it's developed and deployed to AWS, before starting to work on
+the front end and iOS app, but keep in mind about these plans.
+- Document this chosen development approach as detailed as possible in a form of checklist (it can be nested, for example: phase 2.3) with optional comments. Checklist is important
+because I want to track what's been done and what not. Write this file to PLAN.md
+- Remember that this project is an opportunity for me to learn building the project, so the plan should account for that. It shouldn't assume my previous technical knowledge
+- Remenber that tests are important, we would like to have unit and integration tests coverage
+- Remember that security is important. This subject is my weak point and I would like to focus on it when it comes to secutiry implementation. Same comes to observability and deployment
+- Having business requirements and technical development plan, come up with README.md file that would take the highlevel overview of both.
 - The files should be well structured and easy to read and navigate, in markdown format
 
-As for the development plan, apart from what has been mentioned already in the files, keep in mind that I want to learn things as we develop the project with the help of AI, I also want the service to have a high level of security, and eventually I want to deploy it to AWS (as early as possible), and deploy it with the help of Terraform. The project should also unitize the observabity tools, like Prometheus & Grafana and Kibana / OpenSearch for logs.
-
-Make the output downlowdable files.
+Notice there are already files that describe the business requirements, technical vision and checklist of what's been already done and a plan for future work. These files are BUSINESS_REQUIREMENTS .md and TECHICAL_DOCUMNETATION.md.
+There's also README.md that describes high level business requirements for the app and the technical stack.
+I don't want you to treat it as a source of truth, but rather as an inspiration. You should only look at these files when you're done with your work, and use the information from there that's missing in your work.

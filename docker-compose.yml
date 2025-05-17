@@ -1,0 +1,104 @@
+services:
+  match-app:
+    build:
+      context: . # Build context is now the current directory (match-app/)
+      dockerfile: Dockerfile # Dockerfile is in the current directory (match-app/)
+    container_name: match-app-service
+    ports:
+      - "8080:8080"
+      - "5005:5005" # Debug port
+    environment:
+      - SPRING_JPA_HIBERNATE_DDL_AUTO=update
+      - SPRING_DEVTOOLS_RESTART_ENABLED=true
+      - SPRING_DEVTOOLS_LIVERELOAD_ENABLED=false # Optional: livereload can be noisy for backend
+    volumes:
+      # Mount compiled classes from host to container
+      # Assumes standard Gradle output directory: build/classes/java/main
+      - ./build/classes/java/main:/app/BOOT-INF/classes
+      # Optional: Mount static resources if you change them frequently without full rebuilds
+      #- ./src/main/resources/static:/app/BOOT-INF/classes/static
+      # Optional: Mount application.properties if you want to change it and have DevTools restart
+      - ./src/main/resources/application.properties:/app/BOOT-INF/classes/application.properties
+    networks:
+      - app-network
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:8080/actuator/health"]
+      interval: 30s
+      timeout: 10s
+      retries: 5
+      start_period: 60s
+
+  prometheus:
+    image: prom/prometheus:v2.47.2
+    container_name: prometheus-service
+    ports:
+      - "9090:9090"
+    volumes:
+      - ./prometheus/prometheus.yml:/etc/prometheus/prometheus.yml # Path relative to docker-compose.yml
+      - prometheus_data:/prometheus
+    command:
+      - '--config.file=/etc/prometheus/prometheus.yml'
+      - '--storage.tsdb.path=/prometheus' # Tell Prometheus where to store data
+      - '--web.console.libraries=/usr/share/prometheus/console_libraries'
+      - '--web.console.templates=/usr/share/prometheus/consoles'
+      - '--web.enable-lifecycle' # Allows reloading config via API (e.g., POST to /-/reload)
+    networks:
+      - app-network
+    depends_on:
+      match-app:
+        condition: service_healthy # Wait for match-app to be healthy before Prometheus starts scraping
+
+  loki:
+    image: grafana/loki:2.9.2
+    container_name: loki-service
+    ports:
+      - "3100:3100" # Loki's HTTP port
+    volumes:
+      - ./loki/loki-config.yml:/etc/loki/config.yml # Mount config
+      - loki_data:/loki # Named volume for Loki data (matches path_prefix in its config)
+    command: -config.file=/etc/loki/config.yml
+    networks:
+      - app-network
+
+  promtail:
+    image: grafana/promtail:2.9.2
+    container_name: promtail-service
+    volumes:
+      - ./promtail/promtail-config.yml:/etc/promtail/config.yml # Mount config
+      - /var/run/docker.sock:/var/run/docker.sock:ro # Read-only access to Docker socket for service discovery
+      - promtail_positions:/tmp # Named volume for Promtail to store its log reading positions
+    command: -config.file=/etc/promtail/config.yml
+    networks:
+      - app-network
+    depends_on:
+      - loki # Promtail needs Loki to be available to push logs
+
+  grafana:
+    image: grafana/grafana:10.2.2
+    container_name: grafana-service
+    ports:
+      - "3000:3000"
+    volumes:
+      - ./grafana/provisioning/:/etc/grafana/provisioning/ # Mount provisioning for datasources & dashboards
+      - grafana_data:/var/lib/grafana # Named volume for Grafana data (dashboards created in UI, settings)
+    environment:
+      - GF_SECURITY_ADMIN_USER=admin
+      - GF_SECURITY_ADMIN_PASSWORD=admin
+      - GF_USERS_ALLOW_SIGN_UP=false # Disable user sign-up
+      # - GF_LOG_LEVEL=debug # Uncomment for Grafana troubleshooting
+    networks:
+      - app-network
+    depends_on:
+      - prometheus
+      - loki
+
+volumes: # Define named volumes for data persistence
+  prometheus_data:
+  loki_data:
+  grafana_data:
+  promtail_positions:
+  # match_app_h2_data: # Uncomment if you use it for H2 file persistence
+
+networks:
+  app-network:
+    driver: bridge # Default network driver

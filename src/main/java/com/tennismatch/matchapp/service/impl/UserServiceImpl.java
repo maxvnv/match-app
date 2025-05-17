@@ -1,6 +1,7 @@
 package com.tennismatch.matchapp.service.impl;
 
 import com.tennismatch.matchapp.dto.RegisterRequest;
+import com.tennismatch.matchapp.model.Role;
 import com.tennismatch.matchapp.model.User;
 import com.tennismatch.matchapp.repository.UserRepository;
 import com.tennismatch.matchapp.service.UserService;
@@ -44,7 +45,7 @@ public class UserServiceImpl implements UserService {
                 .build();
         
         // Add a default role, e.g., "ROLE_USER" as per Spring Security conventions if roles are simple strings
-        user.getRoles().add("USER");
+        user.getRoles().add(Role.ROLE_USER);
 
         return userRepository.save(user);
     }

@@ -67,11 +67,12 @@ public class User {
     @Enumerated(EnumType.STRING)
     private Sex sex;
 
-    @ElementCollection(fetch = FetchType.EAGER) // Eager fetch for roles as they are core to user identity
+    @ElementCollection(fetch = FetchType.EAGER)
     @CollectionTable(name = "user_roles", joinColumns = @JoinColumn(name = "user_id"))
+    @Enumerated(EnumType.STRING)
     @Column(name = "role")
     @Builder.Default // Initialize with an empty set if not provided by builder
-    private Set<String> roles = new HashSet<>();
+    private Set<Role> roles = new HashSet<>();
 
     @CreationTimestamp
     @Column(nullable = false, updatable = false)

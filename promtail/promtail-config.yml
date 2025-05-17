@@ -1,0 +1,32 @@
+server:
+  http_listen_port: 9080 # Promtail's own HTTP port (not typically accessed directly)
+  grpc_listen_port: 0 # Disabled gRPC server
+
+positions:
+  filename: /tmp/positions.yaml # File to store log read positions (persisted via volume)
+
+clients:
+  - url: http://loki:3100/loki/api/v1/push # Address of the Loki service
+
+scrape_configs:
+- job_name: match-app-logs
+  # Configuration to scrape logs from Docker containers
+  docker_sd_configs:
+    - host: unix:///var/run/docker.sock # Access to Docker socket
+      refresh_interval: 5s
+      # Filter to select only the 'match-app' service containers
+      filters:
+        # The key is to find a label that uniquely identifies your match-app container.
+        # One reliable way if your service is named 'match-app' in docker-compose.yml is:
+        - name: label # Fallback to service name
+          values: ["com.docker.compose.service=match-app"]
+  relabel_configs:
+    # Use the Docker Compose service name as the 'job' label in Loki
+    - source_labels: ['__meta_docker_container_label_com_docker_compose_service']
+      target_label: 'job'
+    - source_labels: ['__meta_docker_container_id']
+      target_label: 'container_id'
+    # Optional: Add other labels from Docker metadata if needed
+    # - source_labels: ['__meta_docker_container_name']
+    #   regex: '/(.*)'
+    #   target_label: 'container_name'

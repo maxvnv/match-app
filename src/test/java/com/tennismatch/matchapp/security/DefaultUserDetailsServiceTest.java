@@ -1,5 +1,6 @@
 package com.tennismatch.matchapp.security;
 
+import com.tennismatch.matchapp.model.Role;
 import com.tennismatch.matchapp.model.User;
 import com.tennismatch.matchapp.service.UserService;
 import org.junit.jupiter.api.BeforeEach;
@@ -27,15 +28,16 @@ class DefaultUserDetailsServiceTest {
     @InjectMocks
     private DefaultUserDetailsService userDetailsService;
 
-    private User appUser; // Renamed to avoid confusion with Spring Security's User
+    private User appUser;
 
     @BeforeEach
     void setUp() {
-        appUser = new User();
-        appUser.setId(1L);
-        appUser.setEmail("test@example.com"); // Use email
-        appUser.setPassword("encodedpassword");
-        appUser.setRoles(Set.of("USER")); // Set roles
+        appUser = User.builder()
+                .id(1L)
+                .email("test@example.com")
+                .password("encodedpassword")
+                .roles(Set.of(Role.ROLE_USER))
+                .build();
     }
 
     @Test
